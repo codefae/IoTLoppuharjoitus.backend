@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using backend.Models;
 using backend.Repositories.Interfaces;
 using backend.settings;
@@ -9,7 +8,7 @@ namespace backend.Repositories;
 
 public class GenericMongoDbRepository<T> : IGenericMongoDbRepository<T> where T : class
 {
-    private readonly IMongoCollection<T> _collection;
+   private readonly IMongoCollection<T> _collection;
 
     public GenericMongoDbRepository(IOptions<DatabaseSettings<IotData>> settings)
     {
@@ -43,8 +42,12 @@ public class GenericMongoDbRepository<T> : IGenericMongoDbRepository<T> where T 
         await _collection.DeleteOneAsync(Builders<T>.Filter.Eq("_id", id));
     }
 
-    public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> filter)
+    public async Task<List<T>> FindAsync(FilterDefinition<T> filter)
     {
         return await _collection.Find(filter).ToListAsync();
+    }
+    public async Task<List<T>> FindAsync(FilterDefinition<T> filter, SortDefinition<T> sort)
+    {
+        return await _collection.Find(filter).Sort(sort).ToListAsync();
     }
 }

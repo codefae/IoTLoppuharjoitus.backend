@@ -1,45 +1,55 @@
 using System.Text;
 using System.Text.Json;
 using backend.Dtos;
-using backend.Models;
-using backend.Repositories.Interfaces;
+using backend.MQTT.Interfaces;
+using backend.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
+using MongoDB.Driver;
 using MQTTnet;
 
 namespace backend.MQTT;
 
-public class MqttMessageHandler(IGenericMongoDbRepository<IotData> iotDataRepository)
+public class MqttMessageHandler(
+    IIotDataService service,
+    IHubContext<IotDataHub> hubContext) : IMqttMessageHandler
 {
-    public Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs e)
+    public async Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs message, CancellationToken cancellationToken)
     {
-        var jsonPayload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+        var jsonPayload = Encoding.UTF8.GetString(message.ApplicationMessage.Payload);
         Console.WriteLine($"Received JSON payload: {jsonPayload}");
-        
+
         try
         {
-            var iotDataDto = JsonSerializer.Deserialize<IotDataDto>(jsonPayload) 
-                             ?? throw new JsonException("Invalid JSON payload.");
+            var iotDataDto = JsonSerializer.Deserialize<IotDataDto>(jsonPayload);
             if (!iotDataDto.Validate())
             {
                 Console.WriteLine("Invalid IoT data received.");
-                return Task.CompletedTask;
-            };
-            
-            iotDataRepository.AddAsync(new IotData()
-            {
-                DeviceId = iotDataDto.DeviceId,
-                Temperature = iotDataDto.Temperature,
-                TimeStamp = DateTime.Now
-            });
+                return;
+            }
+
+            iotDataDto.TimeStamp = DateTime.Now;
+
+            Console.WriteLine($"Received IoT data: {iotDataDto.Temperature}");
+
+            await hubContext.Clients.All.SendAsync(
+                "ReceiveIotData",
+                iotDataDto,
+                cancellationToken
+            ).ConfigureAwait(false);
+
+           await service.AddAsync(iotDataDto).ConfigureAwait(false);
         }
-        catch (JsonException jsonEx)
+        catch (JsonException e)
         {
-            Console.WriteLine($"JSON deserialization error: {jsonEx.Message}");
+            Console.WriteLine($"JSON deserialization error: {e.Message}");
         }
-        catch (Exception ex)
+        catch(MongoException e)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.WriteLine($"An error occurred while adding data to the database: {e.Message}");
         }
-        
-        return Task.CompletedTask;
+        catch (Exception e)
+        {
+            Console.WriteLine($"An error occurred: {e.Message}");
+        }
     }
 }

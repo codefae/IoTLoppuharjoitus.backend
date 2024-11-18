@@ -1,90 +1,106 @@
-using System.Net.Sockets;
-using System.Text;
 using backend.MQTT.Interfaces;
 using backend.settings;
 using Microsoft.Extensions.Options;
 using MQTTnet;
-using MQTTnet.Exceptions;
 
 namespace backend.MQTT;
 
 public class MqttService : IMqttService
 {
-    private readonly int _retryWaitSeconds;
-    private bool _isConnecting;
+    private readonly IOptions<MqttSettings> _settings;
     private readonly IMqttClient _mqttClient;
     private readonly MqttClientOptions _mqttOptions;
 
-    public MqttService(IOptions<MqttSettings> settings, MqttMessageHandler messageHandler)
+    public MqttService(
+        IOptions<MqttSettings> settings,
+        IMqttMessageHandler messageHandler,
+        CancellationTokenSource cancellationTokenSource)
     {
+        var cancellationToken = cancellationTokenSource.Token;
         var factory = new MqttClientFactory();
 
+        _settings = settings;
         _mqttClient = factory.CreateMqttClient();
-        _retryWaitSeconds = settings.Value.RetryWaitSeconds;
         _mqttOptions = new MqttClientOptionsBuilder()
             .WithClientId(settings.Value.ClientId)
             .WithTcpServer(settings.Value.MqttBrokerAddress, settings.Value.MqttBrokerPort)
             .Build();
 
-        // Mqtt client event handlers
-        _mqttClient.ConnectedAsync += async e =>
-        {
-            Console.WriteLine("Connected to MQTT broker.");
-
-            foreach (var topic in settings.Value.Topics)
-            {
-                await _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build())
-                    .ConfigureAwait(false);
-            }
-        };
-
-        _mqttClient.DisconnectedAsync += async e =>
-        {
-            if (_isConnecting)
-            {
-                return;
-            }
-
-            Console.WriteLine("Disconnected from MQTT broker.");
-            await Task.Delay(TimeSpan.FromSeconds(2));
-
-            await ConnectToMqttAsync().ConfigureAwait(false);
-        };
-
-        _mqttClient.ApplicationMessageReceivedAsync += messageHandler.HandleMessageAsync;
+        _mqttClient.ApplicationMessageReceivedAsync += async e
+            => await messageHandler.HandleMessageAsync(e, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ConnectToMqttAsync()
+    public async Task EnsureConnectedAsync(CancellationToken cancellationToken)
     {
         var attempt = 0;
-        _isConnecting = true;
 
-        while (_mqttClient.IsConnected == false)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
+                if (await _mqttClient.TryPingAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    continue;
+                }
+
                 Console.WriteLine("Connecting to MQTT broker...");
-                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+
+                await _mqttClient.ConnectAsync(_mqttOptions, cancellationToken).ConfigureAwait(false);
                 
-                await _mqttClient.ConnectAsync(_mqttOptions).ConfigureAwait(false);
+                Console.WriteLine("The MQTT client is connected.");
+                attempt = 0;
+                
+                await SubscribeTopicsAsync(_settings.Value.Topics, cancellationToken).ConfigureAwait(false);
             }
-            catch (MqttCommunicationException e)
+            catch (Exception e)
             {
                 attempt++;
-                
-                Console.WriteLine(
-                    $"Failed to connect to MQTT broker. " +
-                    $"Retrying in {_retryWaitSeconds} seconds... ({attempt}th attempt)"
-                );
-                await Task.Delay(TimeSpan.FromSeconds(_retryWaitSeconds));
+                Console.WriteLine($"Failed to connect to MQTT broker with error: {e.Message}");
+                Console.WriteLine($"Retrying in {_settings.Value.RetryWaitSeconds} seconds... ({attempt}th attempt)");
+            }
+            finally
+            {
+                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.RetryWaitSeconds), cancellationToken).ConfigureAwait(false);
             }
         }
-
-        _isConnecting = false;
     }
 
     public async Task DisconnectFromMqttAsync()
     {
-        await _mqttClient.DisconnectAsync().ConfigureAwait(false);
+        if (_mqttClient.IsConnected)
+        {
+            await _mqttClient.DisconnectAsync(
+                    new MqttClientDisconnectOptionsBuilder()
+                        .WithReason(MqttClientDisconnectOptionsReason.NormalDisconnection)
+                        .Build())
+                .ConfigureAwait(false);
+        }
+    }
+
+    public void Dispose()
+    {
+        _mqttClient.Dispose();
+    }
+
+    private async Task SubscribeTopicsAsync(string[] topics, CancellationToken cancellationToken)
+    {
+        foreach (var topic in topics)
+        {
+            var result = await _mqttClient.SubscribeAsync(
+                    new MqttTopicFilterBuilder().WithTopic(topic).Build(),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            
+            if (result.Items.First().ResultCode == MqttClientSubscribeResultCode.GrantedQoS2 ||
+                result.Items.First().ResultCode == MqttClientSubscribeResultCode.GrantedQoS1 ||
+                result.Items.First().ResultCode == MqttClientSubscribeResultCode.GrantedQoS0)
+            {
+                Console.WriteLine($"Subscribed to topic: {topic}");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to subscribe to topic: {topic} with error: {result.Items.First().ResultCode}");
+            }
+        }
     }
 }

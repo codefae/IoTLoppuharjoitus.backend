@@ -4,5 +4,5 @@ namespace backend.MQTT.Interfaces;
 
 public interface IMqttMessageHandler
 {
-    Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs e);
+    Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs message, CancellationToken cancellationToken);
 }

@@ -1,12 +1,7 @@
-using System.Diagnostics;
-
 namespace backend.Dtos;
 
-public class IotDataDto
+public record struct IotDataDto(string DeviceId, double Temperature, DateTime TimeStamp)
 {
-    public required string DeviceId { get;set; }
-    public required double Temperature { get; set; }
-
     public bool Validate() => this switch
     {
         { DeviceId.Length: < 1 or > 50 } => false,

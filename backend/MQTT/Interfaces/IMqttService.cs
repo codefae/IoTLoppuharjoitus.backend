@@ -1,7 +1,7 @@
 namespace backend.MQTT.Interfaces;
 
-public interface IMqttService
+public interface IMqttService : IDisposable
 {
-    Task ConnectToMqttAsync();
+    Task EnsureConnectedAsync(CancellationToken cancellationToken);
     Task DisconnectFromMqttAsync();
 }
