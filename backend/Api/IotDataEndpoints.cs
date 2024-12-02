@@ -1,4 +1,5 @@
 using backend.Services.Interfaces;
+using MongoDB.Driver;
 
 namespace backend.Api;
 
@@ -12,9 +13,17 @@ public static class IotDataEndpoints
             string deviceId, 
             IIotDataService service) =>
         {
-            var data = await service.GetLastDataAsync(deviceId);
+            try
+            {
+                var data = await service.GetLastDataAsync(deviceId);
 
-            return data == null ? Results.NotFound($"No data found for device: {deviceId}") : Results.Ok(data);
+                return data == null ? Results.NotFound($"No data found for device: {deviceId}") : Results.Ok(data);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return Results.Problem("Something went wrong");
+            }
         });
         
         group.MapGet("/average/{deviceId}/{hours}/{minutes}", async (
@@ -23,9 +32,17 @@ public static class IotDataEndpoints
             int minutes, 
             IIotDataService service) =>
         {
-            var averages = await service.GetMinuteAveragesAsync(deviceId, hours, minutes);
+            try
+            {
+                var averages = await service.GetMinuteAveragesAsync(deviceId, hours, minutes);
 
-            return averages.Count == 0 ? Results.NotFound($"No data found for device: {deviceId} int the last: {hours}h") : Results.Ok(averages);
+                return averages.Count == 0 ? Results.NotFound($"No data found for device: {deviceId} int the last: {hours}h") : Results.Ok(averages);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return Results.Problem("Something went wrong");
+            }
         });
     }
 }

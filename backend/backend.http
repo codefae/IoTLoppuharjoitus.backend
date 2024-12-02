@@ -1,6 +1,11 @@
-@backend_HostAddress = http://localhost:5076
+@backend_HostAddress = http://172.20.49.43:5076
 
-GET {{backend_HostAddress}}/weatherforecast/
+GET {{backend_HostAddress}}/IotData/average/your_device_id/100/10
+Accept: application/json
+
+###
+
+GET {{backend_HostAddress}}/IotData/current/your_device_id
 Accept: application/json
 
 ###

@@ -26,8 +26,11 @@ public class MqttService : IMqttService
             .WithTcpServer(settings.Value.MqttBrokerAddress, settings.Value.MqttBrokerPort)
             .Build();
 
-        _mqttClient.ApplicationMessageReceivedAsync += async e
-            => await messageHandler.HandleMessageAsync(e, cancellationToken).ConfigureAwait(false);
+        _mqttClient.ApplicationMessageReceivedAsync += async e =>
+        {
+            Console.WriteLine("Message received from MQTT broker.");
+            await messageHandler.HandleMessageAsync(e, cancellationToken).ConfigureAwait(false);
+        };
     }
 
     public async Task EnsureConnectedAsync(CancellationToken cancellationToken)
@@ -46,10 +49,10 @@ public class MqttService : IMqttService
                 Console.WriteLine("Connecting to MQTT broker...");
 
                 await _mqttClient.ConnectAsync(_mqttOptions, cancellationToken).ConfigureAwait(false);
-                
+
                 Console.WriteLine("The MQTT client is connected.");
                 attempt = 0;
-                
+
                 await SubscribeTopicsAsync(_settings.Value.Topics, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
@@ -60,7 +63,8 @@ public class MqttService : IMqttService
             }
             finally
             {
-                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.RetryWaitSeconds), cancellationToken).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(_settings.Value.RetryWaitSeconds), cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
     }
@@ -90,7 +94,7 @@ public class MqttService : IMqttService
                     new MqttTopicFilterBuilder().WithTopic(topic).Build(),
                     cancellationToken)
                 .ConfigureAwait(false);
-            
+
             if (result.Items.First().ResultCode == MqttClientSubscribeResultCode.GrantedQoS2 ||
                 result.Items.First().ResultCode == MqttClientSubscribeResultCode.GrantedQoS1 ||
                 result.Items.First().ResultCode == MqttClientSubscribeResultCode.GrantedQoS0)
@@ -99,7 +103,8 @@ public class MqttService : IMqttService
             }
             else
             {
-                Console.WriteLine($"Failed to subscribe to topic: {topic} with error: {result.Items.First().ResultCode}");
+                Console.WriteLine(
+                    $"Failed to subscribe to topic: {topic} with error: {result.Items.First().ResultCode}");
             }
         }
     }

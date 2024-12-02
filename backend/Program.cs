@@ -10,6 +10,9 @@ using backend.settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on all IPs (0.0.0.0) and a specific port (e.g., 5076)
+builder.WebHost.ConfigureKestrel(o => {});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
@@ -27,6 +30,7 @@ builder.Services.AddSingleton<IMqttMessageHandler, MqttMessageHandler>();
 builder.Services.AddSingleton<IGenericMongoDbRepository<IotData>, GenericMongoDbRepository<IotData>>();
 builder.Services.AddSingleton<IIotDataService, IotDataService>();
 builder.Services.AddSingleton<IMqttService, MqttService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
