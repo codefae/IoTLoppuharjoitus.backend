@@ -18,7 +18,7 @@ public static class ConfigureMqttClient
         lifetime.ApplicationStopping.Register(() =>
         {
             cancellationTokenSource.Cancel();
-            mqttService.DisconnectFromMqttAsync().Wait();
+            mqttService.DisconnectFromMqttAsync().Wait(cancellationToken);
             mqttService.Dispose();
         });
     }

@@ -8,7 +8,7 @@ public class IotData
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
-    [property: BsonElement("DeviceId")] 
+    [property: BsonElement("deviceid")] 
     public required string DeviceId { get; set; }
     [property: BsonElement("temperature")] 
     public required double Temperature { get; set; }

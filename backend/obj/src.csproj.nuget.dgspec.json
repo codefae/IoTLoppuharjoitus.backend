@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj": {}
+    "/home/eetu/SchoolWork/Iot-LoppuHarjoitus/Iot-LoppuHarjoitus.backend/src/src.csproj": {}
   },
   "projects": {
-    "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj": {
+    "/home/eetu/SchoolWork/Iot-LoppuHarjoitus/Iot-LoppuHarjoitus.backend/src/src.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj",
-        "projectName": "backend",
-        "projectPath": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj",
+        "projectUniqueName": "/home/eetu/SchoolWork/Iot-LoppuHarjoitus/Iot-LoppuHarjoitus.backend/src/src.csproj",
+        "projectName": "src",
+        "projectPath": "/home/eetu/SchoolWork/Iot-LoppuHarjoitus/Iot-LoppuHarjoitus.backend/src/src.csproj",
         "packagesPath": "/home/eetu/.nuget/packages/",
-        "outputPath": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/obj/",
+        "outputPath": "/home/eetu/SchoolWork/Iot-LoppuHarjoitus/Iot-LoppuHarjoitus.backend/src/obj/",
         "projectStyle": "PackageReference",
         "UsingMicrosoftNETSdk": false,
         "configFilePaths": [

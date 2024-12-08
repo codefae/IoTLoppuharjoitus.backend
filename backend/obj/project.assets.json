@@ -1103,11 +1103,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/eetu/SchoolWork/IotWeatherStation/backend/backend.csproj",
+      "projectUniqueName": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj",
       "projectName": "backend",
-      "projectPath": "/home/eetu/SchoolWork/IotWeatherStation/backend/backend.csproj",
+      "projectPath": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj",
       "packagesPath": "/home/eetu/.nuget/packages/",
-      "outputPath": "/home/eetu/SchoolWork/IotWeatherStation/backend/obj/",
+      "outputPath": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/obj/",
       "projectStyle": "PackageReference",
       "UsingMicrosoftNETSdk": false,
       "configFilePaths": [

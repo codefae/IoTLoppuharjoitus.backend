@@ -10,7 +10,6 @@ using backend.settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to listen on all IPs (0.0.0.0) and a specific port (e.g., 5076)
 builder.WebHost.ConfigureKestrel(o => {});
 
 builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +32,6 @@ builder.Services.AddSingleton<IMqttService, MqttService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

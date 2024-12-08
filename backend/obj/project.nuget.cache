@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "kzhz/RmJ4pw=",
+  "dgSpecHash": "4t8toZRtz2w=",
   "success": true,
-  "projectFilePath": "/home/eetu/SchoolWork/IotWeatherStation/backend/backend.csproj",
+  "projectFilePath": "/home/eetu/SchoolWork/IoT-Loppuharjoitus/Iot-Loppuharjoitus.backend/backend/backend.csproj",
   "expectedPackageFiles": [
     "/home/eetu/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
     "/home/eetu/.nuget/packages/microsoft.aspnetcore.openapi/8.0.10/microsoft.aspnetcore.openapi.8.0.10.nupkg.sha512",
